@@ -43,10 +43,36 @@
             return await Users.ToListAsync();
         }
 
-        public Task<User> Update(User newObject)
+        public async Task<User> Update(User newObject)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var existingUser = await Users.FindAsync(newObject.Id);
+
+                if (existingUser == null)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                Entry(existingUser).CurrentValues.SetValues(newObject);
+
+                await SaveChangesAsync();
+
+                return existingUser;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("somthing went wrong updating user " + newObject.Id.ToString());
+                throw;
+            }
+            
         }
-        // Add more DbSet properties for other models if needed
+
+
+        private bool UserExists(Guid id)
+        {
+            return Users.Any(u => u.Id == id);
+        }
+
     }
 }

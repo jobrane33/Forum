@@ -68,43 +68,27 @@ namespace Forum.Controllers
                 return NotFound();
             }
 
+
             return View(user);
         }
 
         // POST: User/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, User user)
+        public async Task<IActionResult> Edit(User user)
         {
-            //badel logique heda fil resp mt3 el user and handel what ever you want from here for better decololing of the code 
-
-            if (id != user.Id)
+            try
             {
-                return BadRequest();
+                await _context.Update(user);
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                return View();
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    await _context.Update(user);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
 
-            return View(user);
+            
         }
 
         // GET: User/Delete/5
