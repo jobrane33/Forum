@@ -15,7 +15,6 @@
 
         public DbSet<User> Users { get; set; }
 
-
         public async Task DeleteById(Guid id)
         {
             var user = await Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -28,9 +27,14 @@
            
         }
 
-        public Task<User> GetById(Guid id)
+        public async Task<User> GetById(Guid id)
         {
-            throw new NotImplementedException();
+            var user = await Users.FirstOrDefaultAsync(user => user.Id == id);
+            if(user is null)
+            {
+                throw new ArgumentNullException();
+            }
+            return user;
         }
 
         
@@ -60,12 +64,38 @@
 
                 return existingUser;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                Console.WriteLine("somthing went wrong updating user " + newObject.Id.ToString());
+                Console.WriteLine("somthing went wrong updating user " + newObject.Id);
                 throw;
             }
             
+        }
+
+        public async Task<User> ValidUser(LoginModel loginModel)
+        {
+            try
+            {
+                if (loginModel == null)
+                {
+                    throw new ArgumentNullException(nameof(loginModel), "Login model cannot be null");
+                }
+
+                if (Users == null)
+                {
+                    throw new InvalidOperationException("Users DbSet is not initialized");
+                }
+
+                var existingUser = await Users.FirstOrDefaultAsync(user =>
+                    user.Pseudonyme == loginModel.Username && user.MotDePasse == loginModel.Password);
+
+                return existingUser;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
         }
 
 

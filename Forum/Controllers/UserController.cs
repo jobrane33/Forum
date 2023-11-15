@@ -5,9 +5,11 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Forum.Repositorys;
-
+using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 namespace Forum.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
         private readonly UserRepository _context;
@@ -59,6 +61,7 @@ namespace Forum.Controllers
         }
 
         // GET: User/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -82,13 +85,18 @@ namespace Forum.Controllers
                 await _context.Update(user);
                 return View(user);
             }
+            
+            catch(ArgumentNullException ex)
+            {
+                return View(user);
+            }
             catch (Exception ex)
             {
                 return View();
             }
 
 
-            
+
         }
 
         // GET: User/Delete/5
@@ -122,9 +130,25 @@ namespace Forum.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UserExists(Guid id)
+        private Guid getIdFromToken()
         {
-            return _context.Users.Any(u => u.Id == id);
+            var tokenString = HttpContext.Session.GetString("Token");
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(tokenString);
+            var claim = jwt.Claims.Where(claim => claim.Type.Contains("sid"));
+            var id = Guid.Parse(claim.FirstOrDefault().Value);
+            return id;
         }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<User> CurrentUser()
+        {
+            var id = getIdFromToken();
+
+            return await _context.GetById(id) ?? throw new NullReferenceException();
+        }
+
+
     }
 }
