@@ -100,18 +100,9 @@ namespace Forum.Controllers
         }
 
         // GET: User/Delete/5
-        public async Task<IActionResult> Delete(Guid id)
+        public IActionResult Delete()
         {
-            try
-            {
-                await _context.DeleteById(id);
-                return View();
-            }
-            catch (ArgumentNullException ex)
-            {
-                return NotFound();
-            }
-            
+              return View();
         }
 
         // POST: User/Delete/5
@@ -119,14 +110,7 @@ namespace Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            await _context.DeleteById(id);
             return RedirectToAction(nameof(Index));
         }
 

@@ -48,7 +48,7 @@ namespace Forum.Controllers
     };
             if (loggedInUser.Admin)
             {
-                claims.Add(new Claim(ClaimTypes.Role , "Admin"));
+                claims.Add(new Claim(ClaimTypes.Role, "Admin"));
             }
             else
             {

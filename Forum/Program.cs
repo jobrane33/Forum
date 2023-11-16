@@ -15,6 +15,8 @@ builder.Services.AddSingleton<IJwtService, JwtService>();
 var connectionString = builder.Configuration.GetValue<string>("ConnectionStrings:DefaultConnection");
 builder.Services.AddDbContext<UserRepository>(options =>
     options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ThemeRepository>(options => options.UseSqlServer(connectionString));
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
