@@ -1,6 +1,7 @@
 ﻿namespace Forum.Repositorys
 {
     using Forum.Models;
+    using Forum.Tools;
     using Microsoft.EntityFrameworkCore;
     using System;
     using System.Collections.Generic;
@@ -8,9 +9,12 @@
 
     public class UserRepository : DbContext, IRepository<User>
     {
-        public UserRepository(DbContextOptions<UserRepository> options)
+        private readonly IPasswordSecurity _PassWordSecurityContext;
+
+        public UserRepository(DbContextOptions<UserRepository> options, IPasswordSecurity passwordSecurity)
             : base(options)
         {
+            _PassWordSecurityContext = passwordSecurity;
         }
 
         public DbSet<User> Users { get; set; }
@@ -86,9 +90,12 @@
                     throw new InvalidOperationException("Users DbSet is not initialized");
                 }
 
-                var existingUser = await Users.FirstOrDefaultAsync(user =>
-                    user.Pseudonyme == loginModel.Username && user.MotDePasse == loginModel.Password);
-
+                var existingUser = new User();
+                existingUser.MotDePasse = loginModel.Password;
+                _PassWordSecurityContext.hashPasswordWithSalt(ref existingUser);
+                existingUser = await Users.FirstOrDefaultAsync(user =>
+                    user.Pseudonyme == loginModel.Username && user.MotDePasse == existingUser.MotDePasse);
+                
                 return existingUser;
             }
             catch (Exception)

@@ -13,11 +13,13 @@ namespace Forum.Controllers
     {
         private readonly UserRepository _context;
         private readonly IJwtService _jwtService;
+        
 
         public SecurityController(UserRepository userRepository, IJwtService jwtService)
         {
             _context = userRepository;
             _jwtService = jwtService;
+            
         }
 
         // GET: SecurityController
@@ -35,11 +37,12 @@ namespace Forum.Controllers
                 return RedirectToAction("test");
             }
             var loggedInUser = await _context.ValidUser(model);
-
+            
             if (loggedInUser == null)
             {
                 return Unauthorized();
             }
+
             var claims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, loggedInUser.Pseudonyme),
@@ -54,9 +57,20 @@ namespace Forum.Controllers
             {
                 claims.Add(new Claim(ClaimTypes.Role, "User"));
             }
-            var tokenString = _jwtService.GenerateToken(loggedInUser, claims);
+            var tokenString = _jwtService.GenerateToken(claims);
             HttpContext.Session.SetString("Token", tokenString);
             return Redirect("http://localhost:5109/User");
+        }
+
+        public ActionResult Logout()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Token")))
+            {
+                return NoContent();
+            }
+            HttpContext.Session.Remove("Token");
+            return RedirectToAction("Index");
+
         }
     }
 }

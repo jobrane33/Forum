@@ -5,6 +5,6 @@ namespace Forum.Tools
 {
     public interface IJwtService
     {
-        string GenerateToken(User user, IEnumerable<Claim> claims);
+        string GenerateToken(IEnumerable<Claim> claims);
     }
 }

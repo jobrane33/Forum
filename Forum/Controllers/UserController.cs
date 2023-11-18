@@ -7,16 +7,23 @@ using System.Threading.Tasks;
 using Forum.Repositorys;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
+using Forum.Tools;
+
 namespace Forum.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
         private readonly UserRepository _context;
+        private readonly IPasswordSecurity _PassWordSecurityContext;
 
-        public UserController(UserRepository context)
+        public UserController(UserRepository context, IPasswordSecurity passwordSecurityContext)
         {
             _context = context;
+            _PassWordSecurityContext = passwordSecurityContext;
+
         }
 
         // GET: User
@@ -52,6 +59,7 @@ namespace Forum.Controllers
         {
             if (ModelState.IsValid)
             {
+                _PassWordSecurityContext.hashPasswordWithSalt(ref user);
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -86,13 +94,9 @@ namespace Forum.Controllers
                 return View(user);
             }
             
-            catch(ArgumentNullException ex)
+            catch(ArgumentNullException)
             {
-                return View(user);
-            }
-            catch (Exception ex)
-            {
-                return View();
+                return Redirect("http://localhost:5109/Home/Error");
             }
 
 
@@ -132,7 +136,5 @@ namespace Forum.Controllers
 
             return await _context.GetById(id) ?? throw new NullReferenceException();
         }
-
-
     }
 }

@@ -5,17 +5,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Forum.Tools;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<IJwtService, JwtService>();
-
+builder.Services.AddSingleton<JwtSecurityTokenHandler>();
+builder.Services.AddSingleton<IPasswordSecurity, PassWordSecurityService>();
 var connectionString = builder.Configuration.GetValue<string>("ConnectionStrings:DefaultConnection");
 builder.Services.AddDbContext<UserRepository>(options =>
     options.UseSqlServer(connectionString));
-builder.Services.AddDbContext<ThemeRepository>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ThemeRepository>(options => 
+    options.UseSqlServer(connectionString));
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -33,7 +36,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
     });
-// Use the appropriate database provider (UseSqlServer, UseSqlite, etc.)
 builder.Services.AddMvc(options => options.EnableEndpointRouting = false);
 builder.Services.AddSession();
 var app = builder.Build();
